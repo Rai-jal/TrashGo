@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // Correctly referencing an environment variable
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  bins          Bin[]
+  pickupRequests PickupRequest[]
+  payments      Payment[]
+  feedback      Feedback[]
+}
+
+model Bin {
+  id            String    @id @default(cuid())
+  binId         String    @unique
+  location      String
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  pickupRequests PickupRequest[]
+}
+
+model PickupRequest {
+  id            String    @id @default(cuid())
+  binId         String
+  bin           Bin       @relation(fields: [binId], references: [id])
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  status        String    // pending, in progress, completed, cancelled
+  requestDate   DateTime  @default(now())
+  completedDate DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Payment {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  amount        Float
+  method        String    // orange, africell, qcell
+  description   String
+  paymentDate   DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Feedback {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  rating        Int
+  agentFeedback String?
+  improvement   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
